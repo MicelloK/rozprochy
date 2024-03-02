@@ -6,18 +6,17 @@ import threading
   
 def client_thread(id, client_socket):
      init_msg = client_socket.recv(1024)
-     client_socket.sendall(init_msg)
+     client_socket.sendall(int.to_bytes(id))
      name = str(init_msg, 'utf-8')
      print(f"NEW CONNECTION | id: {id} name: {name}")
      
      while True:
           try:
                buff = client_socket.recv(1024)
-               msg = f"Msg from {id} ({name}): " + str(buff, 'utf-8')
-               print(msg)
+               print(f"[TCP] Msg from (addr: {client_socket.getpeername()} id: {id}) {name}: " + str(buff, 'utf-8'))
                for connection_id in connections:
                     if connection_id != id:
-                         connections[connection_id].send(bytes(msg, 'utf-8'))
+                         connections[connection_id].send(bytes(f"Msg from {name}: " + str(buff, 'utf-8'), 'utf-8'))
                client_socket.sendall(bytes('echo', 'utf-8'))
           except (ConnectionAbortedError, ConnectionError):
                print(f"CLIENT {id} ({name}) CLOSED CONNECTION")
@@ -26,22 +25,43 @@ def client_thread(id, client_socket):
                client_socket.close()
                break
           
+def udp_listener(client_socket):
+     print('[UDP] START LISTENING...')
+     while True:
+          id_buff, address = client_socket.recvfrom(1024)
+          name_buff, address = client_socket.recvfrom(1024)
+          buff, address = client_socket.recvfrom(1024)
+          client_id = int.from_bytes(id_buff)
+          name = str(name_buff, 'utf-8')
+          msg = str(buff, 'utf-8')
+          
+          print(f"[UDP] Msg from (addr: {address} id: {id}) {name}: " + str(buff, 'utf-8'))
+          for connection_id in connections:
+               if connection_id != client_id:
+                    connections[connection_id].send(bytes(f'Msg from {name}: {msg}', 'utf-8'))
+
+     
           
 
 if __name__ == '__main__':
      server_port = 9009
      MAX_CLIENTS = 5
-     server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-     server_socket.bind(('', server_port))
-     server_socket.listen(5)
+     
+     tcp_server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+     udp_server_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+     tcp_server_socket.bind(('', server_port))
+     udp_server_socket.bind(('', server_port))
+     tcp_server_socket.listen(5)
      
      free_ids = list(range(MAX_CLIENTS))
      connections = {}
      
-     print("WAITING FOR CONNECTIONS...")
+     udp_t = threading.Thread(target=udp_listener, args=(udp_server_socket,))
+     udp_t.start()
+     print("[TCP] WAITING FOR CONNECTIONS...")
      while True:
           if free_ids:
-               client_socket, address = server_socket.accept()
+               client_socket, address = tcp_server_socket.accept()
                id = free_ids.pop()
                connections[id] = client_socket
                ct = threading.Thread(target=client_thread, args=(id, client_socket))
