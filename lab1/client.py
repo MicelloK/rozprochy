@@ -42,11 +42,14 @@ if __name__ == '__main__':
                     exit()
                elif msg.upper() == 'U':
                     msg = input('[UDP] > ')
+                    if msg == 'ascii':
+                         with open('lab1/ascii_art.txt') as file:
+                              msg = file.read()
                     if msg:
                          udp_client_socket.sendto(echo_client_id, (server_IP, server_port))
                          udp_client_socket.sendto(bytes(name, 'utf-8'), (server_IP, server_port))
-                         udp_client_socket.sendto(bytes(msg, 'utf-8'), (server_IP, server_port))
-               else:  
+                         udp_client_socket.sendto(bytes(msg, 'utf-8'), (server_IP, server_port))                   
+               else:
                     tcp_client_socket.send(bytes(msg, 'utf-8'))
                     
 
