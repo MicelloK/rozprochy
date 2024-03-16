@@ -22,11 +22,13 @@
 <body>
      <div class="content">
           <h1>Wyszukiwarka Pi Wa &#127866;</h1>
-          <form method="POST" id="beerForm" action="/logged/search">
-               <label for="city_name_lbl">Miasto:</label><br>
+          <form method="GET" id="beerForm" action="/search">
+               <label for="city_name">Miasto:</label><br>
                <input type="text" id="city_name" name="city_name" required><br><br>
                <label for="address">Gdzie jesteś?:</label><br>
                <input type="text" id="address" name="address" required><br><br>
+               <label for="api_key">KLUCZ dostępu do PIwA:</label><br>
+               <input type="text" id="api_key" name="api_key" required><br><br>
                <input type="submit" value="Szukaj">
      </div>
 </body>

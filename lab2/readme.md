@@ -7,29 +7,29 @@
 - Implementacja klienta - statyczny formularz zapytań / strona odpowiedzi: [0-2] pkt.
 - Testowanie żądań REST z pomocą Postman-a/Swager UI (do serwera i do serwisu
   zewnętrznego): [0-1] pkt
+  <br><br>
 
-## zależności
+# PIWO API
 
-- python-multipart
+Api znajdujące informacje o PIWIE.
+
+## Zależności
+
 - fastapi
 - geopy
 
-## uruchomienie
+## Opis programu
 
-```
-python3 -m uvicorn main:app --reload
-```
+Serwery wykorzystuje metody `get`.
 
-## działanie programu
-
-Serwer wykorzystuje jedną metodę `get` i dwie `post`.
-
-Zaimplementowany został trywialny system autoryzacji. W tym celu podaje się klucz dostępu.
+W celu autoryzacji należy podać klucz api.  
+`API_KEY` = 7nG0kRZXY8Vc3DfS26AbzLmHxW1IjPQ9
 
 Klient do serwera wysyła dane:
 
 - `city_name` - nazwa miasta w którym będą wyszukiwane browary. Informacje o [bazie danych](https://openbrewerydb.org/breweries),
 - `address` - aktualna lokalizacja.
+- `api_key` - klucz do autoryzacji.
 
 W odpowiedzi serwer wysyła zapytania do serwisów zewnętrznych:
 
@@ -39,6 +39,8 @@ W odpowiedzi serwer wysyła zapytania do serwisów zewnętrznych:
 
 a następnie konstruuje odpowiedź.
 
+W przypadku błędu do wygenerowania obsługłującej strony, serwer korzysta z serwisu https://http.cat/.
+
 Klient uzykuje dane takie jak:
 
 - informacje o najbliższym browarze,
@@ -47,6 +49,22 @@ Klient uzykuje dane takie jak:
 - najwyżej i najniżej położony lokal,
 - cytat motywacyjny.
 
-## przykład użycia
+## Dokumentacja
 
-Należy uruchomić serwer i wejść na podany adres. Następnie zalogować się do serwisu (domyślnie hasło - admin1234). Proponuję wyszukać miasto Wrocław (w tej bazie danych występuje tam duża ilość browarów) oraz dowolną lokalizację (we Wrocławiu np. Krakowska 10 Wrocław).
+### Uruchomienie serwera
+
+```
+python3 -m uvicorn main:app --reload
+```
+
+### Strona startowa
+
+`url` = localhost:8000
+
+### Link do zasobu
+
+`url` = localhost:8000/search?city_name={_miasto_}&address={_adres_}&api_key={_twój klucz_}
+
+### Przykład użycia
+
+Proponuję wybrać miasto _Wrocław_ (duża ilość browarów w bazie) i jakiś istniejący adres np. _Krakowska 10 Wrocław_.
