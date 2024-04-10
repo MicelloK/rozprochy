@@ -134,6 +134,10 @@ class NameNode:
                result = ray.get(self.storage_nodes[storage_id].list_chunks.remote())
                print(f"Node PID: {result[0]} | {result[1]}")
                
+     def list_artifacts(self):
+          for artifact_name, chunks in self.artifacts.items():
+               print(f"{artifact_name} : {chunks}")
+               
 if __name__ == "__main__":
      ray.shutdown()
      ray.init()
@@ -163,6 +167,8 @@ if __name__ == "__main__":
                     name_node.get(parsed_input[1])
           elif command == 'list':
                name_node.list_status()
+          elif command == 'artifacts':
+               name_node.list_artifacts()
           else:
                print("Unknown command")
                      
