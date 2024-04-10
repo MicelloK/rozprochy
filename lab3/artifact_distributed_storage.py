@@ -46,8 +46,7 @@ class StorageNode:
      def list_chunks(self):
           return (os.getpid(), self.chunks)
           
-          
-
+@ray.remote
 class NameNode:
      def __init__(self) -> None:
           self.storage_nodes = {storage_id : StorageNode.remote() for storage_id in range(NUM_STORAGE_NODES)}
@@ -115,7 +114,7 @@ class NameNode:
                for chunk_id, storages in artifact.items():
                     storage_node = self.storage_nodes[storages[0]]
                     result += ray.get(storage_node.get_chunk.remote(name, chunk_id))
-               print(f"{name} | {result}")
+               return result
           
      def split_content(self, content):
           return [content[i:i+CHUNK_SIZE] for i in range(0, len(content), CHUNK_SIZE)]
@@ -125,24 +124,24 @@ class NameNode:
           for storage_node in self.storage_nodes.values():
                result.append(storage_node.list_chunks.remote())
           result = ray.get(result)
-          
-          for node in result:
-               print(f"Node PID: {node[0]} | {node[1]}")
+          return result
                
      def list_cluster_status(self, storage_id):
+          result = []
           if storage_id in self.storage_nodes:
-               result = ray.get(self.storage_nodes[storage_id].list_chunks.remote())
-               print(f"Node PID: {result[0]} | {result[1]}")
+               result.append(self.storage_nodes[storage_id].list_chunks.remote())
                
      def list_artifacts(self):
+          result = ""
           for artifact_name, chunks in self.artifacts.items():
-               print(f"{artifact_name} : {chunks}")
+               result += f"{artifact_name} : {chunks}\n"
+          return result
                
 if __name__ == "__main__":
      ray.shutdown()
      ray.init()
      
-     name_node = NameNode()
+     name_node = NameNode.remote()
      
      exit_flag = False
      while not exit_flag:
@@ -155,20 +154,28 @@ if __name__ == "__main__":
           
           if command == 'upload':
                if len(parsed_input) >= 3:
-                    name_node.upload(parsed_input[1], " ".join(parsed_input[2:]))
+                    name_node.upload.remote(parsed_input[1], " ".join(parsed_input[2:]))
           elif command == 'update':
                if len(parsed_input) >= 3:
-                    name_node.update(parsed_input[1], " ".join(parsed_input[2:]))
+                    name_node.update.remote(parsed_input[1], " ".join(parsed_input[2:]))
           elif command == 'delete':
                if len(parsed_input) >= 2:
-                    name_node.delete(parsed_input[1])
+                    name_node.delete.remote(parsed_input[1])
           elif command == 'get':
                if len(parsed_input) >= 2:
-                    name_node.get(parsed_input[1])
+                    result = ray.get(name_node.get.remote(parsed_input[1]))
+                    print(f"{parsed_input[1]} : {result}")
           elif command == 'list':
-               name_node.list_status()
+               result = ray.get(name_node.list_status.remote())
+               for node in result:
+                    print(f"Node PID: {node[0]} | {node[1]}")
           elif command == 'artifacts':
-               name_node.list_artifacts()
+               result = ray.get(name_node.list_artifacts.remote())
+               print(result)
+          elif command == 'clear':
+               os.system('cls')
+          elif command == 'exit':
+               exit_flag = True
           else:
                print("Unknown command")
                      
