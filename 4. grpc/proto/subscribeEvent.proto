@@ -1,0 +1,30 @@
+syntax = "proto3";
+
+ option java_multiple_files = true;
+ option java_package = "sr.grpc.gen";
+ option java_outer_classname = "EventSubscriptionProto";
+
+package event.subscription;
+
+message Event {
+    enum EventType {
+        SPORT = 0;
+        MUSIC = 1;
+        THEATER = 2;
+        CINEMA = 3;
+        KEEP_ALIVE = 4;
+    }
+
+    EventType type = 1;
+    string name = 2;
+    string description = 3;
+}
+
+message SubscriptionRequest {
+    repeated Event.EventType eventTypes = 1;
+}
+
+service EventNotification {
+    rpc Subscribe (SubscriptionRequest) returns (stream Event) {}
+}
+
