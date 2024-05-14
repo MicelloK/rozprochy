@@ -4,8 +4,8 @@
 import subprocess
 
 interpreter = 'python3'
-server_path = 'lab1/server.py'
-client_path = 'lab1/client.py'
+server_path = '1. sockets/server.py'
+client_path = '1. sockets/client.py'
 num_of_processes = 3
 
 for _ in range(num_of_processes):
