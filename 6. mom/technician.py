@@ -28,8 +28,7 @@ def process_test_request(ch, method, properties, body):
     body_str = body.decode('utf-8')
     time.sleep(len(body_str)//3)
     doctor_name, task_info = body_str.split(' ')
-    task_info_str = task_info.decode('utf-8')
-    print(f' [d] task {task_info_str} done')
+    print(f' [d] task {task_info} done')
     channel.basic_publish(
         exchange=msg_exchange_name,
         routing_key='doctor.' + doctor_name,
